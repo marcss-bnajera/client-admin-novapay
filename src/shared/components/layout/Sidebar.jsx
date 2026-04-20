@@ -9,7 +9,6 @@ import exchange from "../../../assets/icons/exchange.png"
 import send from "../../../assets/icons/send.png"
 import cash from "../../../assets/icons/cash.png"
 
-
 export const Sidebar = () => {
     const items = [
         { label: "Inicio", icon: HomeIcon },
@@ -27,8 +26,11 @@ export const Sidebar = () => {
     const active = "Inicio";
 
     return (
-        <aside className="w-64 bg-[#F1F5F9] min-h-[calc(100vh-4rem)] p-4 border-r border-white">
-            <ul className="space-y-3"> {/* Aumenté el espacio entre elementos de 1 a 3 */}
+        <aside className="w-72 bg-[#0f172a] min-h-[calc(100vh-5rem)] p-6 shadow-2xl relative overflow-hidden">
+            {/* Decoración de fondo para que no se mire vacío */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#CD9B67]/10 rounded-full blur-3xl"></div>
+
+            <ul className="space-y-4 relative z-10">
                 {items.map((item) => {
                     const isActive = item.label === active;
 
@@ -36,10 +38,10 @@ export const Sidebar = () => {
                         <li key={item.label}>
                             <div
                                 className={`
-                                relative flex items-center gap-4 px-4 py-3 rounded-xl font-semibold cursor-pointer transition-all
+                                    relative flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold cursor-pointer transition-all duration-300
                                     ${isActive
-                                        ? "text-[#1E293B] bg-white shadow-sm border-l-4 border-[#CD9B67]"
-                                        : "text-[#475569] hover:bg-white/60"
+                                        ? "text-white bg-gradient-to-r from-[#CD9B67] to-[#b08554] shadow-lg shadow-[#CD9B67]/20 scale-[1.02]"
+                                        : "text-slate-400 hover:text-white hover:bg-white/5"
                                     }
                                 `}
                             >
@@ -47,10 +49,15 @@ export const Sidebar = () => {
                                     <img
                                         src={item.icon}
                                         alt={item.label}
-                                        className="w-8 h-8 object-contain" // Iconos más grandes (32px)
+                                        className={`w-7 h-7 object-contain transition-all ${isActive ? "brightness-0 invert" : "opacity-70 group-hover:opacity-100"
+                                            }`}
                                     />
                                 )}
-                                <span className="text-lg">{item.label}</span> {/* Texto un poco más grande */}
+                                <span className="text-base tracking-wide">{item.label}</span>
+
+                                {isActive && (
+                                    <div className="absolute right-4 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                )}
                             </div>
                         </li>
                     );
