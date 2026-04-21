@@ -1,5 +1,5 @@
 import HomeIcon from "../../../assets/icons/home.png"
-import Users from "../../../assets/icons/users.png"
+//import Users from "../../../assets/icons/users.png"
 import accounts from "../../../assets/icons/account.png"
 import deposits from "../../../assets/icons/deposits.png"
 import cards from "../../../assets/icons/cards.png"
@@ -8,55 +8,84 @@ import Compras from "../../../assets/icons/compras.png"
 import exchange from "../../../assets/icons/exchange.png"
 import send from "../../../assets/icons/send.png"
 import cash from "../../../assets/icons/cash.png"
+import {
+    Home,
+    Users,
+    Wallet,
+    PiggyBank,
+    CreditCard,
+    Package,
+    Send,
+    Receipt,
+    ShoppingCart,
+    DollarSign
+} from "lucide-react";
 
 export const Sidebar = () => {
     const items = [
-        { label: "Inicio", icon: HomeIcon },
+        { label: "Inicio", icon: Home },
         { label: "Usuarios", icon: Users },
-        { label: "Cuentas", icon: accounts },
-        { label: "Depositos", icon: deposits },
-        { label: "Tarjetas", icon: cards },
-        { label: "Productos", icon: product },
-        { label: "Transferencias", icon: send },
-        { label: "Transacciones", icon: cash },
-        { label: "Compras", icon: Compras },
-        { label: "Divisas", icon: exchange },
+        { label: "Cuentas", icon: Wallet },
+        { label: "Depositos", icon: PiggyBank },
+        { label: "Tarjetas", icon: CreditCard },
+        { label: "Productos", icon: Package },
+        { label: "Transferencias", icon: Send },
+        { label: "Transacciones", icon: Receipt },
+        { label: "Compras", icon: ShoppingCart },
+        { label: "Divisas", icon: DollarSign },
     ];
 
     const active = "Inicio";
 
     return (
-        <aside className="w-72 bg-[#0f172a] min-h-[calc(100vh-5rem)] p-6 shadow-2xl relative overflow-hidden">
-            {/* Decoración de fondo para que no se mire vacío */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#CD9B67]/10 rounded-full blur-3xl"></div>
+        <aside className="w-72 bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#0f172a] min-h-[calc(100vh-5rem)] shadow-2xl relative overflow-hidden border-r border-slate-700/50">
+            {/* Decoraciones de fondo */}
+            <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 -right-32 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl"></div>
 
-            <ul className="space-y-4 relative z-10">
+            {/* Header de Sidebar */}
+            <div className="p-6 border-b border-slate-700/50 relative z-10">
+                <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-xl p-4 border border-slate-600/30">
+                    <p className="text-slate-400 text-xs font-semibold mb-1">MENÚ PRINCIPAL</p>
+                    <p className="text-white text-sm font-bold">Navegación</p>
+                </div>
+            </div>
+
+            <ul className="p-4 space-y-2 relative z-10">
                 {items.map((item) => {
                     const isActive = item.label === active;
+                    const Icon = item.icon;
 
                     return (
                         <li key={item.label}>
                             <div
                                 className={`
-                                    relative flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold cursor-pointer transition-all duration-300
+                                    relative flex items-center gap-4 px-5 py-3.5 rounded-xl font-semibold cursor-pointer transition-all duration-300 group
                                     ${isActive
-                                        ? "text-white bg-gradient-to-r from-[#CD9B67] to-[#b08554] shadow-lg shadow-[#CD9B67]/20 scale-[1.02]"
-                                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                                        ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30 scale-[1.02]"
+                                        : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                                     }
                                 `}
                             >
-                                {item.icon && (
-                                    <img
-                                        src={item.icon}
-                                        alt={item.label}
-                                        className={`w-7 h-7 object-contain transition-all ${isActive ? "brightness-0 invert" : "opacity-70 group-hover:opacity-100"
-                                            }`}
-                                    />
+                                {Icon && (
+                                    <div className={`
+                                        p-2 rounded-lg transition-all
+                                        ${isActive
+                                            ? "bg-white/20"
+                                            : "bg-slate-700/30 group-hover:bg-slate-700/50"
+                                        }
+                                    `}>
+                                        <Icon className="w-5 h-5" />
+                                    </div>
                                 )}
-                                <span className="text-base tracking-wide">{item.label}</span>
+                                <span className="text-sm tracking-wide flex-1">{item.label}</span>
 
                                 {isActive && (
-                                    <div className="absolute right-4 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-lg shadow-white/50"></div>
+                                )}
+
+                                {!isActive && (
+                                    <div className="w-1 h-1 bg-emerald-500/0 group-hover:bg-emerald-500 rounded-full transition-all"></div>
                                 )}
                             </div>
                         </li>
