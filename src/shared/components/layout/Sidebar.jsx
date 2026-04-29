@@ -18,7 +18,8 @@ import {
     Send,
     Receipt,
     ShoppingCart,
-    DollarSign
+    DollarSign,
+    BookCopy
 } from "lucide-react";
 
 export const Sidebar = () => {
@@ -28,6 +29,7 @@ export const Sidebar = () => {
         { label: "Cuentas", icon: Wallet },
         { label: "Depositos", icon: PiggyBank },
         { label: "Tarjetas", icon: CreditCard },
+        { label: "Libretas", icon: BookCopy },
         { label: "Productos", icon: Package },
         { label: "Transferencias", icon: Send },
         { label: "Transacciones", icon: Receipt },
