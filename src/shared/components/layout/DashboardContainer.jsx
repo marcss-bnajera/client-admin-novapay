@@ -4,6 +4,10 @@ import { Deposits } from "../../../features/deposits/components/Deposits";
 import { Cards } from "../../../features/cards/components/Cards";
 import { Passbooks } from "../../../features/passbooks/components/Passbooks";
 import { Products } from "../../../features/products/components/Products";
+import { Transfers } from "../../../features/transfers/components/Transfers";
+import { Transactions } from "../../../features/transactions/components/Transactions";
+import { Shopping } from "../../../features/shoppings/components/Shopping";
+import { Currencies } from "../../../features/currencies/components/Currencies";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 
@@ -24,6 +28,10 @@ export const DashoardContainer = () => {
                     <Cards />
                     <Passbooks />
                     <Products />
+                    <Transfers />
+                    <Transactions />
+                    <Shopping />
+                    <Currencies />
                 </main>
             </div>
         </div>
