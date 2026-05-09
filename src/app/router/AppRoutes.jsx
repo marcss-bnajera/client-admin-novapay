@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import { AuthPage } from "../../features/auth/pages/AuthPage";
 import { DashboardPage } from "../layouts/DashboardPage";
 import { Home } from "../../features/home/components/Home";
@@ -12,14 +12,19 @@ import { Transfers } from "../../features/transfers/components/Transfers";
 import { Transactions } from "../../features/transactions/components/Transactions";
 import { Shopping } from "../../features/shoppings/components/Shopping";
 import { Currencies } from "../../features/currencies/components/Currencies";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 export const AppRoutes = () => {
     return (
         <Routes>
             <Route path="/" element={<AuthPage />} />
 
-            {/* Protegido por rol */}
-            <Route path="/dashboard/*" element={<DashboardPage />} >
+            <Route path="/dashboard/*" element={
+                <ProtectedRoute>
+                    <DashboardPage />
+                </ProtectedRoute>
+            }>
+                <Route index element={<Navigate to="home" replace />} />
                 <Route path="home" element={<Home />} />
                 <Route path="users" element={<Users />} />
                 <Route path="accounts" element={<Accounts />} />
@@ -33,8 +38,7 @@ export const AppRoutes = () => {
                 <Route path="currencies" element={<Currencies />} />
             </Route>
 
-            {/* Ruta temporal para pruebas */}
-            <Route path="*" element={<h1>Pagina no encontrada</h1>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }

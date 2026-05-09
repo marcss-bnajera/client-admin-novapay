@@ -1,202 +1,214 @@
-import React from "react";
-import { X, User, Mail, IdCard, Phone, Briefcase, MapPin, Lock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useUsersStore } from "../store/usersStore";
+import { showSuccess, showError } from "../../../shared/utils/toast";
+import { getRoles } from "../../../shared/api/admin";
+import { X, User, Mail, IdCard, Phone, Briefcase, MapPin, Lock, RefreshCw } from "lucide-react";
 
-export const UserModal = ({ isOpen, onClose }) => {
+export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
+    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const { createUser, updateUser, loading } = useUsersStore();
+    const [roles, setRoles] = useState([]);
+
+    useEffect(() => {
+        getRoles()
+            .then(res => {
+                const data = res.data?.roles || res.data?.data || res.data || [];
+                setRoles(Array.isArray(data) ? data : []);
+            })
+            .catch(() => setRoles([]));
+    }, []);
+
+    useEffect(() => {
+        if (isOpen) {
+            if (user) {
+                reset({
+                    nombre: user.nombre || "",
+                    apellido: user.apellido || "",
+                    username: user.username || "",
+                    email: user.email || "",
+                    dpi: user.dpi || "",
+                    nit: user.nit || "",
+                    telefono: user.telefono || "",
+                    nombre_trabajo: user.nombre_trabajo || "",
+                    ingresos_mensuales: user.ingresos_mensuales || "",
+                    direccion: user.direccion || "",
+                    role_id: user.role_id || user.role?.id || user.Role?.id || "",
+                });
+            } else {
+                reset({
+                    nombre: "", apellido: "", username: "", email: "",
+                    dpi: "", nit: "", telefono: "", nombre_trabajo: "",
+                    ingresos_mensuales: "", direccion: "", password: "",
+                    role_id: "",
+                });
+            }
+        }
+    }, [isOpen, user, reset]);
+
     if (!isOpen) return null;
 
+    const onSubmit = async (data) => {
+        try {
+            const payload = { ...data, ingresos_mensuales: parseFloat(data.ingresos_mensuales), role_id: parseInt(data.role_id) };
+
+            if (user) {
+                await updateUser(user.id || user._id, payload);
+                showSuccess("Usuario actualizado correctamente");
+            } else {
+                await createUser(payload);
+                showSuccess("Usuario creado correctamente");
+            }
+            onSaved?.();
+            reset();
+            onClose();
+        } catch {
+            showError("Error al guardar el usuario");
+        }
+    };
+
+    const inputClass = "w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all";
+    const labelClass = "text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2";
+
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-[60] px-3 animate-in fade-in duration-200">
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-700/50 animate-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-[60] px-3">
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-700/50">
 
                 {/* HEADER */}
                 <div className="p-6 bg-gradient-to-r from-emerald-500 to-teal-600 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-teal-600/20"></div>
                     <div className="flex justify-between items-center relative z-10">
                         <div>
                             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
                                     <User className="w-6 h-6" />
                                 </div>
-                                Registro de Usuario
+                                {user ? "Editar Usuario" : "Registro de Usuario"}
                             </h2>
-                            <p className="text-sm text-emerald-100 mt-1 ml-13">
-                                Datos de Cliente NovaPay
+                            <p className="text-sm text-emerald-100 mt-1">
+                                {user ? "Actualizar datos del cliente" : "Datos de Cliente NovaPay"}
                             </p>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-white"
-                        >
+                        <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-white">
                             <X className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
 
                 {/* FORMULARIO */}
-                <div className="p-6 space-y-6 overflow-y-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="p-6 space-y-4 overflow-y-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        {/* Datos Personales */}
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <User className="w-3.5 h-3.5" />
-                                Nombre
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="Ej. Juan"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <User className="w-3.5 h-3.5" />
-                                Apellido
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="Ej. Pérez"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <User className="w-3.5 h-3.5" />
-                                Nombre de Usuario
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="jperez"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <Mail className="w-3.5 h-3.5" />
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="juan@ejemplo.com"
-                            />
-                        </div>
-
-                        {/* Documentación */}
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <IdCard className="w-3.5 h-3.5" />
-                                DPI
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="0000 00000 0000"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <IdCard className="w-3.5 h-3.5" />
-                                NIT
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="1234567-K"
-                            />
-                        </div>
-
-                        {/* Contacto y Trabajo */}
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <Phone className="w-3.5 h-3.5" />
-                                Teléfono
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="+502 0000-0000"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <Briefcase className="w-3.5 h-3.5" />
-                                Empresa de Trabajo
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="Nombre de la empresa"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2">
-                                Ingresos Mensuales
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">Q</span>
-                                <input
-                                    type="number"
-                                    className="w-full px-4 py-3 pl-10 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                    placeholder="0.00"
-                                />
+                            <div className="flex flex-col">
+                                <label className={labelClass}><User className="w-3.5 h-3.5" /> Nombre</label>
+                                <input type="text" className={inputClass} placeholder="Ej. Juan"
+                                    {...register("nombre", { required: "El nombre es obligatorio" })} />
+                                {errors.nombre && <p className="text-red-400 text-xs mt-1">{errors.nombre.message}</p>}
                             </div>
-                        </div>
 
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2">
-                                Rol de Usuario
-                            </label>
-                            <select className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all">
-                                <option value="">Seleccione un rol</option>
-                                <option value="1">Administrador</option>
-                                <option value="2">Cliente</option>
-                            </select>
-                        </div>
+                            <div className="flex flex-col">
+                                <label className={labelClass}><User className="w-3.5 h-3.5" /> Apellido</label>
+                                <input type="text" className={inputClass} placeholder="Ej. Pérez"
+                                    {...register("apellido", { required: "El apellido es obligatorio" })} />
+                                {errors.apellido && <p className="text-red-400 text-xs mt-1">{errors.apellido.message}</p>}
+                            </div>
 
-                        <div className="flex flex-col md:col-span-2">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <MapPin className="w-3.5 h-3.5" />
-                                Dirección Completa
-                            </label>
-                            <textarea
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all h-24 resize-none"
-                                placeholder="Dirección de residencia"
-                            ></textarea>
-                        </div>
+                            <div className="flex flex-col">
+                                <label className={labelClass}><User className="w-3.5 h-3.5" /> Nombre de Usuario</label>
+                                <input type="text" className={inputClass} placeholder="jperez"
+                                    {...register("username", { required: "El username es obligatorio", minLength: { value: 3, message: "Mínimo 3 caracteres" } })} />
+                                {errors.username && <p className="text-red-400 text-xs mt-1">{errors.username.message}</p>}
+                            </div>
 
-                        <div className="flex flex-col md:col-span-2 pt-4 border-t border-slate-700/50">
-                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <Lock className="w-3.5 h-3.5" />
-                                Contraseña Temporal
-                            </label>
-                            <input
-                                type="password"
-                                className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                                placeholder="••••••••"
-                            />
+                            <div className="flex flex-col">
+                                <label className={labelClass}><Mail className="w-3.5 h-3.5" /> Email</label>
+                                <input type="email" className={inputClass} placeholder="juan@ejemplo.com"
+                                    {...register("email", { required: "El email es obligatorio", pattern: { value: /^\S+@\S+\.\S+$/, message: "Email inválido" } })} />
+                                {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className={labelClass}><IdCard className="w-3.5 h-3.5" /> DPI (13 dígitos)</label>
+                                <input type="text" className={inputClass} placeholder="0000000000000" maxLength={13}
+                                    {...register("dpi", { required: "El DPI es obligatorio", minLength: { value: 13, message: "El DPI debe tener 13 dígitos" }, maxLength: { value: 13, message: "El DPI debe tener 13 dígitos" } })} />
+                                {errors.dpi && <p className="text-red-400 text-xs mt-1">{errors.dpi.message}</p>}
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className={labelClass}><IdCard className="w-3.5 h-3.5" /> NIT</label>
+                                <input type="text" className={inputClass} placeholder="1234567-K"
+                                    {...register("nit", { required: "El NIT es obligatorio" })} />
+                                {errors.nit && <p className="text-red-400 text-xs mt-1">{errors.nit.message}</p>}
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className={labelClass}><Phone className="w-3.5 h-3.5" /> Teléfono</label>
+                                <input type="text" className={inputClass} placeholder="50000000"
+                                    {...register("telefono", { required: "El teléfono es obligatorio" })} />
+                                {errors.telefono && <p className="text-red-400 text-xs mt-1">{errors.telefono.message}</p>}
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className={labelClass}><Briefcase className="w-3.5 h-3.5" /> Empresa / Trabajo</label>
+                                <input type="text" className={inputClass} placeholder="Nombre de la empresa"
+                                    {...register("nombre_trabajo")} />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className={labelClass}>Ingresos Mensuales (Q)</label>
+                                <input type="number" step="0.01" className={inputClass} placeholder="0.00"
+                                    {...register("ingresos_mensuales", { required: "Los ingresos son obligatorios", min: { value: 100, message: "Mínimo Q100.00" } })} />
+                                {errors.ingresos_mensuales && <p className="text-red-400 text-xs mt-1">{errors.ingresos_mensuales.message}</p>}
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className={labelClass}>Rol</label>
+                                <select className={inputClass} {...register("role_id", { required: "Selecciona un rol" })}>
+                                    <option value="">Seleccione un rol</option>
+                                    {roles.length > 0 ? (
+                                        roles.map(r => (
+                                            <option key={r.id} value={r.id}>{r.name}</option>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <option value="1">Administrador</option>
+                                            <option value="2">Cliente</option>
+                                        </>
+                                    )}
+                                </select>
+                                {errors.role_id && <p className="text-red-400 text-xs mt-1">{errors.role_id.message}</p>}
+                            </div>
+
+                            <div className="flex flex-col md:col-span-2">
+                                <label className={labelClass}><MapPin className="w-3.5 h-3.5" /> Dirección</label>
+                                <textarea className={`${inputClass} h-20 resize-none`} placeholder="Dirección de residencia"
+                                    {...register("direccion", { required: "La dirección es obligatoria" })} />
+                                {errors.direccion && <p className="text-red-400 text-xs mt-1">{errors.direccion.message}</p>}
+                            </div>
+
+                            {!user && (
+                                <div className="flex flex-col md:col-span-2 pt-4 border-t border-slate-700/50">
+                                    <label className={labelClass}><Lock className="w-3.5 h-3.5" /> Contraseña Temporal</label>
+                                    <input type="password" className={inputClass} placeholder="••••••••"
+                                        {...register("password", { required: "La contraseña es obligatoria", minLength: { value: 8, message: "Mínimo 8 caracteres" } })} />
+                                    {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div>
 
-                {/* BOTONES DE ACCIÓN */}
-                <div className="p-6 bg-slate-900/50 border-t border-slate-700/50 flex flex-col sm:flex-row justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-3 text-slate-300 font-semibold hover:bg-slate-700/50 rounded-xl transition-all"
-                    >
-                        Cancelar
-                    </button>
-                    <button className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all">
-                        Guardar Usuario
-                    </button>
-                </div>
+                    {/* BOTONES */}
+                    <div className="p-6 bg-slate-900/50 border-t border-slate-700/50 flex flex-col sm:flex-row justify-end gap-3">
+                        <button type="button" onClick={onClose}
+                            className="px-6 py-3 text-slate-300 font-semibold hover:bg-slate-700/50 rounded-xl transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" disabled={loading}
+                            className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
+                            {loading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Guardando...</> : user ? "Actualizar Usuario" : "Guardar Usuario"}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

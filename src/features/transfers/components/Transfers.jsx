@@ -1,22 +1,24 @@
-import { useState } from "react";
-import { Search, ArrowRightLeft, ArrowRight, Calendar, Hash, DollarSign, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useTransfersStore } from "../store/transfersStore";
+import { Search, ArrowRightLeft, ArrowRight, Calendar, Hash, DollarSign, FileText, RefreshCw } from "lucide-react";
 
 export const Transfers = () => {
-    // Estado para la búsqueda
     const [searchTerm, setSearchTerm] = useState("");
 
-    // Datos simulados
-    const transfers = [
-        { id: 5001, account_origin_id: 1020, account_destination_id: 3045, amount: 1200.00, description: "Pago de servicios", date: "2026-05-01T10:30:00" },
-        { id: 5002, account_origin_id: 3045, account_destination_id: 1020, amount: 450.75, description: "Transferencia familiar", date: "2026-04-28T14:15:00" }
-    ];
+    const { transfers, loading, getTransfers } = useTransfersStore();
 
-    // Lógica de filtrado usando el searchTerm
-    const filteredTransfers = transfers.filter(t => 
-        t.account_origin_id.toString().includes(searchTerm) ||
-        t.account_destination_id.toString().includes(searchTerm) ||
-        t.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    useEffect(() => {
+        getTransfers();
+    }, []);
+
+    const filteredTransfers = transfers.filter((t) => {
+        const term = searchTerm.toLowerCase();
+        return (
+            String(t.account_origin_id || t.accountOriginId || "").includes(term) ||
+            String(t.account_destination_id || t.accountDestinationId || "").includes(term) ||
+            (t.description || t.descripcion || "").toLowerCase().includes(term)
+        );
+    });
 
     return (
         <div className="p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -43,10 +45,13 @@ export const Transfers = () => {
                                 className="pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all w-64"
                             />
                         </div>
+                        <button onClick={getTransfers} disabled={loading} className="p-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-400 hover:text-emerald-400 transition-all">
+                            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+                        </button>
                     </div>
                 </div>
 
-                {/* TABLA DE TRANSFERENCIAS */}
+                {/* TABLA */}
                 <div className="bg-slate-800/40 backdrop-blur-md rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
@@ -60,35 +65,29 @@ export const Transfers = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-700/50">
-                                {filteredTransfers.length > 0 ? (
-                                    filteredTransfers.map((t) => (
-                                        <tr key={t.id} className="group hover:bg-slate-700/20 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <span className="text-slate-500 font-mono text-sm group-hover:text-emerald-400">#{t.id}</span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-center gap-4">
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="bg-slate-900/80 border border-slate-700 px-3 py-1 rounded-lg text-white font-mono text-xs">{t.account_origin_id}</span>
-                                                    </div>
-                                                    <ArrowRight className="w-4 h-4 text-emerald-500" />
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg text-emerald-400 font-mono text-xs font-bold">{t.account_destination_id}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 font-bold text-white font-mono">Q{t.amount.toFixed(2)}</td>
-                                            <td className="px-6 py-4 text-sm text-slate-300">{t.description}</td>
-                                            <td className="px-6 py-4 text-xs text-slate-500">{new Date(t.date).toLocaleDateString()}</td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="5" className="px-6 py-12 text-center text-slate-500 italic">
-                                            No se encontraron transferencias con esos criterios.
+                                {loading && filteredTransfers.length === 0 ? (
+                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-500" /> Cargando transferencias...
+                                    </td></tr>
+                                ) : filteredTransfers.length === 0 ? (
+                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron transferencias con esos criterios.</td></tr>
+                                ) : filteredTransfers.map((t) => (
+                                    <tr key={t.id || t._id} className="group hover:bg-slate-700/20 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <span className="text-slate-500 font-mono text-sm group-hover:text-emerald-400">#{t.id || t._id}</span>
                                         </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-center gap-4">
+                                                <span className="bg-slate-900/80 border border-slate-700 px-3 py-1 rounded-lg text-white font-mono text-xs">{t.account_origin_id || t.accountOriginId}</span>
+                                                <ArrowRight className="w-4 h-4 text-emerald-500" />
+                                                <span className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg text-emerald-400 font-mono text-xs font-bold">{t.account_destination_id || t.accountDestinationId}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 font-bold text-white font-mono">Q{parseFloat(t.amount || t.monto || 0).toFixed(2)}</td>
+                                        <td className="px-6 py-4 text-sm text-slate-300">{t.description || t.descripcion || "—"}</td>
+                                        <td className="px-6 py-4 text-xs text-slate-500">{new Date(t.date || t.createdAt).toLocaleDateString()}</td>
                                     </tr>
-                                )}
+                                ))}
                             </tbody>
                         </table>
                     </div>

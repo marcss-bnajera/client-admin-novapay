@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Lock, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { User, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { useAuthStore } from "../../../features/auth/store/authStore";
 import imgUno from "../../../assets/img/carrusel_uno.png";
 import imgDos from "../../../assets/img/carrusel_dos.png";
 import imgTres from "../../../assets/img/carrusel_tres.png";
@@ -11,6 +13,13 @@ const carouselSlides = [
 ];
 
 export const LoginForm = ({ onForgot }) => {
+    const navigate = useNavigate();
+    const { login } = useAuthStore();
+
+    const [form, setForm] = useState({ EmailOrUsername: "", Password: "" });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
     const [current, setCurrent] = useState(0);
     const [prev, setPrev] = useState(null);
     const [animating, setAnimating] = useState(false);
@@ -37,11 +46,38 @@ export const LoginForm = ({ onForgot }) => {
         return () => clearInterval(intervalRef.current);
     }, []);
 
+    const handleChange = (e) => {
+        setError("");
+        setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!form.EmailOrUsername || !form.Password) {
+            setError("Completa todos los campos");
+            return;
+        }
+        setLoading(true);
+        try {
+            const result = await login(form);
+            if (result?.success) {
+                navigate("/dashboard/home");
+            } else {
+                setError(result?.error || "Credenciales incorrectas");
+            }
+        } catch (err) {
+            setError(err?.response?.data?.message || "Error al iniciar sesión");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="fixed inset-0 flex overflow-hidden bg-[#060a10]">
 
             {/* ===== FORMULARIO ===== */}
-            <div className="w-[45%] min-w-[340px] flex flex-col justify-center items-center px-10 py-12 relative z-10"
+            <form onSubmit={handleSubmit}
+                className="w-[45%] min-w-[340px] flex flex-col justify-center items-center px-10 py-12 relative z-10"
                 style={{ background: "linear-gradient(160deg, #080d14 0%, #060a10 60%, #040810 100%)", borderRight: "1px solid rgba(16,185,129,0.07)" }}>
 
                 {/* Glow de fondo */}
@@ -61,6 +97,14 @@ export const LoginForm = ({ onForgot }) => {
                         <p className="text-slate-500 text-[13.5px]">Ingresa tus credenciales para continuar</p>
                     </div>
 
+                    {/* Error */}
+                    {error && (
+                        <div className="mb-5 px-4 py-3 rounded-xl text-sm text-red-400"
+                            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                            {error}
+                        </div>
+                    )}
+
                     {/* Usuario */}
                     <div className="mb-5">
                         <label className="block text-[10.5px] font-bold text-emerald-500 uppercase tracking-[0.15em] mb-2 ml-0.5">
@@ -72,6 +116,9 @@ export const LoginForm = ({ onForgot }) => {
                             </div>
                             <input
                                 type="text"
+                                name="EmailOrUsername"
+                                value={form.EmailOrUsername}
+                                onChange={handleChange}
                                 placeholder="correo@ejemplo.com o usuario"
                                 className="w-full pl-11 pr-4 py-3.5 text-[13.5px] rounded-xl text-slate-200 placeholder:text-slate-700 outline-none transition-all duration-200"
                                 style={{ background: "#070c14", border: "1px solid rgba(30,41,59,0.8)" }}
@@ -92,6 +139,9 @@ export const LoginForm = ({ onForgot }) => {
                             </div>
                             <input
                                 type="password"
+                                name="Password"
+                                value={form.Password}
+                                onChange={handleChange}
                                 placeholder="••••••••"
                                 className="w-full pl-11 pr-4 py-3.5 text-[13.5px] rounded-xl text-slate-200 placeholder:text-slate-700 outline-none transition-all duration-200"
                                 style={{ background: "#070c14", border: "1px solid rgba(30,41,59,0.8)" }}
@@ -110,14 +160,17 @@ export const LoginForm = ({ onForgot }) => {
                     </div>
 
                     {/* Submit */}
-                    <button type="submit"
-                        className="group w-full py-3.5 px-5 rounded-xl font-bold text-sm text-[#030712] flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]"
+                    <button type="submit" disabled={loading}
+                        className="group w-full py-3.5 px-5 rounded-xl font-bold text-sm text-[#030712] flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                         style={{ background: "linear-gradient(135deg, #10b981 0%, #0d9488 100%)", boxShadow: "0 4px 24px rgba(16,185,129,0.2)" }}>
-                        Iniciar sesión
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        {loading ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> Iniciando sesión...</>
+                        ) : (
+                            <>Iniciar sesión <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                        )}
                     </button>
                 </div>
-            </div>
+            </form>
 
             {/* ===== CARRUSEL ===== */}
             <div className="flex-1 relative overflow-hidden bg-[#030608]">

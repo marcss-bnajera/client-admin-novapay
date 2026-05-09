@@ -1,33 +1,25 @@
-import { useState } from "react";
-import { 
-    Search, 
-    ArrowUpCircle, 
-    ArrowDownCircle, 
-    RefreshCcw, 
-    TrendingUp, 
-    TrendingDown, 
-    Hash, 
-    CreditCard, 
-    Calendar
+import { useState, useEffect } from "react";
+import { useTransactionsStore } from "../store/transactionsStore";
+import {
+    Search, ArrowUpCircle, ArrowDownCircle, RefreshCcw, TrendingUp, TrendingDown,
+    Hash, CreditCard, Calendar, RefreshCw
 } from "lucide-react";
 
 export const Transactions = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState("all");
 
-    // Datos simulados
-    const transactions = [
-        { id: 901, account_id: 1020, type: "deposit", amount: 2500.00, description: "Depósito en efectivo", balance_after: 5000.00, createdAt: "2026-05-01T09:00:00" },
-        { id: 902, account_id: 1020, type: "withdraw", amount: 200.00, description: "Retiro Cajero", balance_after: 4800.00, createdAt: "2026-05-01T10:30:00" },
-        { id: 903, account_id: 3045, type: "transfer_in", amount: 1200.00, description: "Transferencia Recibida", balance_after: 3200.00, createdAt: "2026-05-01T11:00:00" },
-        { id: 904, account_id: 1020, type: "transfer_out", amount: 1200.00, description: "Pago de servicios", balance_after: 3600.00, createdAt: "2026-05-01T11:00:00" },
-    ];
+    const { transactions, loading, getTransactions } = useTransactionsStore();
 
-    // Búsqueda + Tipo de Transacción
-    const filteredTransactions = transactions.filter(t => {
-        const matchesSearch = t.account_id.toString().includes(searchTerm) || 
-                             t.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = filterType === "all" || t.type === filterType;
+    useEffect(() => {
+        getTransactions();
+    }, []);
+
+    const filteredTransactions = transactions.filter((t) => {
+        const matchesSearch =
+            String(t.account_id || t.accountId || "").includes(searchTerm) ||
+            (t.description || t.descripcion || "").toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === "all" || (t.type || t.tipo) === filterType;
         return matchesSearch && matchesType;
     });
 
@@ -44,7 +36,7 @@ export const Transactions = () => {
     return (
         <div className="p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
             <div className="max-w-7xl mx-auto">
-                
+
                 {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-8">
                     <div>
@@ -63,8 +55,7 @@ export const Transactions = () => {
                                 className="pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all w-72"
                             />
                         </div>
-                        
-                        <select 
+                        <select
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}
                             className="bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
@@ -75,6 +66,9 @@ export const Transactions = () => {
                             <option value="transfer_in">Entradas</option>
                             <option value="transfer_out">Salidas</option>
                         </select>
+                        <button onClick={getTransactions} disabled={loading} className="p-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-400 hover:text-emerald-400 transition-all">
+                            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+                        </button>
                     </div>
                 </div>
 
@@ -92,31 +86,36 @@ export const Transactions = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/50">
-                            {filteredTransactions.map((tx) => {
-                                const style = getTypeStyles(tx.type);
-                                const isNegative = tx.type === "withdraw" || tx.type === "transfer_out";
-
+                            {loading && filteredTransactions.length === 0 ? (
+                                <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-500" /> Cargando transacciones...
+                                </td></tr>
+                            ) : filteredTransactions.length === 0 ? (
+                                <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron transacciones.</td></tr>
+                            ) : filteredTransactions.map((tx) => {
+                                const type = tx.type || tx.tipo;
+                                const style = getTypeStyles(type);
+                                const isNegative = type === "withdraw" || type === "transfer_out";
                                 return (
-                                    <tr key={tx.id} className="group hover:bg-slate-700/20 transition-all">
-                                        <td className="px-6 py-4 font-mono text-xs text-slate-500">#{tx.id}</td>
+                                    <tr key={tx.id || tx._id} className="group hover:bg-slate-700/20 transition-all">
+                                        <td className="px-6 py-4 font-mono text-xs text-slate-500">#{tx.id || tx._id}</td>
                                         <td className="px-6 py-4">
-                                            <span className="text-white font-semibold">ACC-{tx.account_id}</span>
-                                            <p className="text-[10px] text-slate-500 truncate w-32">{tx.description}</p>
+                                            <span className="text-white font-semibold">ACC-{tx.account_id || tx.accountId}</span>
+                                            <p className="text-[10px] text-slate-500 truncate w-32">{tx.description || tx.descripcion}</p>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-bold uppercase ${style.color}`}>
-                                                {style.icon}
-                                                {style.label}
+                                                {style.icon}{style.label}
                                             </div>
                                         </td>
                                         <td className={`px-6 py-4 text-right font-bold font-mono ${isNegative ? "text-rose-400" : "text-emerald-400"}`}>
-                                            {isNegative ? "-" : "+"}Q{tx.amount.toFixed(2)}
+                                            {isNegative ? "-" : "+"}Q{parseFloat(tx.amount || tx.monto || 0).toFixed(2)}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <span className="text-slate-300 font-mono text-sm">Q{tx.balance_after.toFixed(2)}</span>
+                                            <span className="text-slate-300 font-mono text-sm">Q{parseFloat(tx.balance_after || tx.saldoResultante || 0).toFixed(2)}</span>
                                         </td>
                                         <td className="px-6 py-4 text-right text-xs text-slate-500 font-medium">
-                                            {new Date(tx.createdAt).toLocaleString()}
+                                            {new Date(tx.createdAt || tx.fecha).toLocaleString()}
                                         </td>
                                     </tr>
                                 );

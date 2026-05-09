@@ -22,7 +22,7 @@ export const useAuthStore = create(
             checkAuth: () => {
                 const token = get().token;
                 const role = get().user?.role;
-                const isAdmin = role == "ADMIN_ROLE";
+                const isAdmin = role === "ADMIN_ROLE" || role === "ADMIN" || role === "Administrador";
 
                 if (token && !isAdmin) {
                     set({
@@ -33,7 +33,7 @@ export const useAuthStore = create(
                         isAuthenticated: false,
                         isLoadingAuth: false,
                         error: "No tienes permiso para acceder como administrador"
-                    })
+                    });
                 }
             },
 
@@ -53,7 +53,7 @@ export const useAuthStore = create(
 
                 //Solo administradores pueden iniciar sesion en client-admin
                 const role = data?.userDetails?.role;
-                if (role !== "ADMIN_ROLE") {
+                if (role !== "ADMIN_ROLE" && role !== "ADMIN" && role !== "Administrador") {
                     const message = "No tienes permisos para acceder como administrador";
 
                     set({

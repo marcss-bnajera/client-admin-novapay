@@ -1,9 +1,5 @@
-import { DashoardContainer } from "../../shared/components/layout/DashboardContainer";
+import { DashboardContainer } from "../../shared/components/layout/DashboardContainer";
 
 export const DashboardPage = () => {
-
-    return (
-        <DashoardContainer />
-    );
-
-}
+    return <DashboardContainer />;
+};

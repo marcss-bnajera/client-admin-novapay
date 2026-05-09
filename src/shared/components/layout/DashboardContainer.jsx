@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom"
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 
-export const DashoardContainer = () => {
+export const DashboardContainer = () => {
     return (
         <div className="min-h-screen bg-[#0F172A] flex flex-col w-full">
 
