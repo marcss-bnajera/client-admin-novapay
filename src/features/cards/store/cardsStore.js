@@ -3,6 +3,7 @@ import {
     getCards as getCardsRequest,
     createCard as createCardRequest,
     deleteCard as deleteCardRequest,
+    updateCard as updateCardRequest
 } from "../../../shared/api";
 
 export const useCardsStore = create((set, get) => ({
@@ -25,11 +26,27 @@ export const useCardsStore = create((set, get) => ({
     createCard: async (data) => {
         try {
             set({ loading: true, error: null });
-            const response = await createCardRequest(data);
-            const newCard = response.data?.data || response.data;
-            set({ cards: [newCard, ...get().cards], loading: false });
+
+            // El controlador espera 'numero_cuenta', nada más.
+            const payload = {
+                numero_cuenta: String(data.numero_cuenta).trim()
+            };
+
+            const response = await createCardRequest(payload);
+
+            // El backend responde con { success: true, card: {...} }
+            const newCard = response.data.card;
+
+            set((state) => ({
+                cards: [newCard, ...state.cards],
+                loading: false
+            }));
+
+            return response.data;
         } catch (error) {
-            set({ loading: false, error: error.response?.data?.message || "Error al emitir tarjeta" });
+            const message = error.response?.data?.message || "Error al emitir tarjeta";
+            set({ loading: false, error: message });
+            console.error("Error en createCard:", error.response?.data);
             throw error;
         }
     },
@@ -41,6 +58,21 @@ export const useCardsStore = create((set, get) => ({
             set({ cards: get().cards.filter((c) => c.id !== id && c._id !== id), loading: false });
         } catch (error) {
             set({ loading: false, error: error.response?.data?.message || "Error al eliminar tarjeta" });
+            throw error;
+        }
+    },
+
+    updateCard: async (id, estado) => {
+        try {
+            set({ loading: true });
+            const response = await updateCardRequest(id, { estado });
+            // Actualizamos la lista localmente
+            const updatedCards = get().cards.map(c =>
+                c.id === id ? { ...c, estado: response.data.card.estado } : c
+            );
+            set({ cards: updatedCards, loading: false });
+        } catch (error) {
+            set({ loading: false });
             throw error;
         }
     },

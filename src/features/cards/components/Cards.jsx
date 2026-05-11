@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { CardModal } from "./CardModal";
+import { CardModalEdit } from "./CardModalEdit";
 import { useCardsStore } from "../store/cardsStore";
 import { showSuccess, showError } from "../../../shared/utils/toast";
-import { Search, PlusCircle, CreditCard, Calendar, Trash2, Eye, RefreshCw } from "lucide-react";
+import { Search, PlusCircle, CreditCard, Calendar, Trash2, Pencil, RefreshCw } from "lucide-react";
 
 export const Cards = () => {
     const [showModal, setShowModal] = useState(false);
+    const [selectedCard, setSelectedCard] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
 
     const { cards, loading, getCards, deleteCard } = useCardsStore();
@@ -22,6 +24,16 @@ export const Cards = () => {
         } catch {
             showError("Error al cancelar la tarjeta");
         }
+    };
+
+    const handleEdit = (card) => {
+        setSelectedCard(card);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedCard(null);
     };
 
     const filteredCards = cards.filter((c) => {
@@ -53,7 +65,10 @@ export const Cards = () => {
                                 className="pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all w-full sm:w-64"
                             />
                         </div>
-                        <button onClick={() => setShowModal(true)} className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 px-5 py-2.5 rounded-xl text-white font-semibold transition-all shadow-lg shadow-emerald-500/30">
+                        <button
+                            onClick={() => { setSelectedCard(null); setShowModal(true); }}
+                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 px-5 py-2.5 rounded-xl text-white font-semibold transition-all shadow-lg shadow-emerald-500/30"
+                        >
                             <PlusCircle className="w-5 h-5" /> Emitir Tarjeta
                         </button>
                         <button onClick={getCards} disabled={loading} className="p-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-400 hover:text-emerald-400 transition-all">
@@ -91,7 +106,7 @@ export const Cards = () => {
                                                     <CreditCard className="w-5 h-5 text-emerald-400" />
                                                 </div>
                                                 <span className="text-white font-mono text-sm tracking-wider">
-                                                    **** **** **** {(card.numero_tarjeta || card.cardNumber || "0000").slice(-4)}
+                                                    **** **** **** {(card.numero_tarjeta || "0000").slice(-4)}
                                                 </span>
                                             </div>
                                         </td>
@@ -101,27 +116,37 @@ export const Cards = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2 text-slate-300">
                                                 <Calendar className="w-4 h-4 text-slate-500" />
-                                                <span className="text-sm font-mono">{card.fecha_expiracion || card.expiryDate || "—"}</span>
+                                                <span className="text-sm font-mono">{card.fecha_expiracion || "—"}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-sm text-slate-400 font-mono">{card.account?.numero_cuenta || card.account_id}</span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`px-2.5 py-1 text-[10px] rounded-full font-bold border ${
-                                                (card.estado || card.status) === "ACTIVA" || (card.estado || card.status) === "ACTIVE"
-                                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                                    : "bg-red-500/10 text-red-400 border-red-500/20"
-                                            }`}>
-                                                {card.estado || card.status || "ACTIVA"}
+                                            <span className={`px-2.5 py-1 text-[10px] rounded-full font-bold border ${card.estado === "ACTIVA"
+                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                                : card.estado === "BLOQUEADA"
+                                                    ? "bg-red-500/10 text-red-400 border-red-500/20"
+                                                    : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                                }`}>
+                                                {card.estado || "ACTIVA"}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button className="p-2 rounded-lg hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-400 transition-all" title="Ver detalles">
-                                                    <Eye className="w-4 h-4" />
+                                                <button
+                                                    onClick={() => handleEdit(card)}
+                                                    className="p-2 rounded-lg hover:bg-amber-500/10 text-slate-400 hover:text-amber-400 transition-all"
+                                                    title="Gestionar Estado"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => handleDelete(card.id || card._id)} className="p-2 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all" title="Cancelar">
+
+                                                <button
+                                                    onClick={() => handleDelete(card.id || card._id)}
+                                                    className="p-2 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all"
+                                                    title="Eliminar permanentemente"
+                                                >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -132,8 +157,23 @@ export const Cards = () => {
                         </table>
                     </div>
                 </div>
-
-                {showModal && <CardModal isOpen={showModal} onClose={() => setShowModal(false)} onSaved={getCards} />}
+                {showModal && (
+                    selectedCard ? (
+                        <CardModalEdit
+                            key={`edit-${selectedCard.id || selectedCard._id}`} // Key única
+                            isOpen={showModal}
+                            onClose={handleCloseModal}
+                            card={selectedCard}
+                        />
+                    ) : (
+                        <CardModal
+                            key="create-modal"
+                            isOpen={showModal}
+                            onClose={handleCloseModal}
+                            onSaved={getCards}
+                        />
+                    )
+                )}
             </div>
         </div>
     );
