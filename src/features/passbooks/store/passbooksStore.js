@@ -26,10 +26,17 @@ export const usePassbooksStore = create((set, get) => ({
         try {
             set({ loading: true, error: null });
             const response = await createPassbookRequest(data);
-            const newPassbook = response.data?.data || response.data;
-            set({ passbooks: [newPassbook, ...get().passbooks], loading: false });
+
+            const newPassbook = response.data?.passbook;
+
+            if (newPassbook) {
+                set((state) => ({
+                    passbooks: [newPassbook, ...state.passbooks],
+                    loading: false
+                }));
+            }
         } catch (error) {
-            set({ loading: false, error: error.response?.data?.message || "Error al crear libreta" });
+            set({ loading: false, error: error.response?.data?.message || "Error al crear" });
             throw error;
         }
     },

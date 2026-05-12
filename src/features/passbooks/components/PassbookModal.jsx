@@ -1,23 +1,20 @@
 import { useForm } from "react-hook-form";
-import { usePassbooksStore } from "../store/passbooksStore";
-import { showSuccess, showError } from "../../../shared/utils/toast";
+import { useSavePassbook } from "../hooks/useSavePassbook";
 import { X, BookOpen, CreditCard, CheckCircle, RefreshCw } from "lucide-react";
 
 export const PassbookModal = ({ isOpen, onClose, onSaved }) => {
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    const { createPassbook, loading } = usePassbooksStore();
+
+    const { savePassbook, loading } = useSavePassbook();
 
     if (!isOpen) return null;
 
     const onSubmit = async (data) => {
-        try {
-            await createPassbook(data);
-            showSuccess("Libreta creada correctamente");
+        const success = await savePassbook(data);
+        if (success) {
             onSaved?.();
             reset();
             onClose();
-        } catch {
-            showError("Error al crear la libreta");
         }
     };
 
@@ -39,7 +36,9 @@ export const PassbookModal = ({ isOpen, onClose, onSaved }) => {
                                 <p className="text-[11px] text-emerald-100 uppercase tracking-wider font-medium">Registro de cuenta</p>
                             </div>
                         </div>
-                        <button onClick={onClose} className="text-white/70 hover:text-white transition-colors"><X className="w-6 h-6" /></button>
+                        <button onClick={onClose} className="text-white/70 hover:text-white transition-colors">
+                            <X className="w-6 h-6" />
+                        </button>
                     </div>
                 </div>
 
@@ -69,9 +68,23 @@ export const PassbookModal = ({ isOpen, onClose, onSaved }) => {
 
                     {/* ACCIONES */}
                     <div className="p-6 bg-slate-900/30 border-t border-slate-700/50 flex gap-3">
-                        <button type="button" onClick={onClose} className="flex-1 py-3 text-slate-400 font-semibold hover:bg-slate-700/50 rounded-xl transition-all">Cancelar</button>
-                        <button type="submit" disabled={loading} className="flex-[2] py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
-                            {loading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Guardando...</> : "Confirmar Registro"}
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-3 text-slate-400 font-semibold hover:bg-slate-700/50 rounded-xl transition-all"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-[2] py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                        >
+                            {loading ? (
+                                <><RefreshCw className="w-4 h-4 animate-spin" /> Guardando...</>
+                            ) : (
+                                "Confirmar Registro"
+                            )}
                         </button>
                     </div>
                 </form>
