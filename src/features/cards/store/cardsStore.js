@@ -66,11 +66,15 @@ export const useCardsStore = create((set, get) => ({
         try {
             set({ loading: true });
             const response = await updateCardRequest(id, { estado });
-            // Actualizamos la lista localmente
-            const updatedCards = get().cards.map(c =>
-                c.id === id ? { ...c, estado: response.data.card.estado } : c
-            );
-            set({ cards: updatedCards, loading: false });
+
+            const updatedCard = response.data.card;
+
+            set((state) => ({
+                cards: state.cards.map((c) =>
+                    (c.id === id || c._id === id) ? { ...c, estado: updatedCard.estado } : c
+                ),
+                loading: false
+            }));
         } catch (error) {
             set({ loading: false });
             throw error;

@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useCardsStore } from "../store/cardsStore";
 import { showSuccess, showError } from "../../../shared/utils/toast";
-// Usamos todos los iconos importados
 import { X, CheckCircle, Ban, AlertCircle } from "lucide-react";
 
 export const CardModalEdit = ({ isOpen, onClose, card }) => {

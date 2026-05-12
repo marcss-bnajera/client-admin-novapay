@@ -65,6 +65,10 @@ export const deleteCard = async (id) => {
     return await axiosAdmin.delete(`/cards/${id}`);
 };
 
+export const updateCard = async (id, data) => {
+    return await axiosAdmin.put(`/cards/${id}`, data);
+};
+
 // ==================== PASSBOOKS ====================
 export const getPassbooks = async () => {
     return await axiosAdmin.get("/passbooks");

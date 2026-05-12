@@ -6,7 +6,8 @@ import { showSuccess, showError } from "../../../shared/utils/toast";
 import { Search, PlusCircle, CreditCard, Calendar, Trash2, Pencil, RefreshCw } from "lucide-react";
 
 export const Cards = () => {
-    const [showModal, setShowModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -14,7 +15,7 @@ export const Cards = () => {
 
     useEffect(() => {
         getCards();
-    }, []);
+    }, [getCards]);
 
     const handleDelete = async (id) => {
         if (!window.confirm("¿Estás seguro de cancelar esta tarjeta?")) return;
@@ -26,13 +27,19 @@ export const Cards = () => {
         }
     };
 
-    const handleEdit = (card) => {
-        setSelectedCard(card);
-        setShowModal(true);
+    const handleOpenCreate = () => {
+        setSelectedCard(null);
+        setShowCreateModal(true);
     };
 
-    const handleCloseModal = () => {
-        setShowModal(false);
+    const handleOpenEdit = (card) => {
+        setSelectedCard(card);
+        setShowEditModal(true);
+    };
+
+    const handleCloseModals = () => {
+        setShowCreateModal(false);
+        setShowEditModal(false);
         setSelectedCard(null);
     };
 
@@ -66,7 +73,7 @@ export const Cards = () => {
                             />
                         </div>
                         <button
-                            onClick={() => { setSelectedCard(null); setShowModal(true); }}
+                            onClick={handleOpenCreate}
                             className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 px-5 py-2.5 rounded-xl text-white font-semibold transition-all shadow-lg shadow-emerald-500/30"
                         >
                             <PlusCircle className="w-5 h-5" /> Emitir Tarjeta
@@ -135,7 +142,7 @@ export const Cards = () => {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
                                                 <button
-                                                    onClick={() => handleEdit(card)}
+                                                    onClick={() => handleOpenEdit(card)}
                                                     className="p-2 rounded-lg hover:bg-amber-500/10 text-slate-400 hover:text-amber-400 transition-all"
                                                     title="Gestionar Estado"
                                                 >
@@ -157,22 +164,17 @@ export const Cards = () => {
                         </table>
                     </div>
                 </div>
-                {showModal && (
-                    selectedCard ? (
-                        <CardModalEdit
-                            key={`edit-${selectedCard.id || selectedCard._id}`} // Key única
-                            isOpen={showModal}
-                            onClose={handleCloseModal}
-                            card={selectedCard}
-                        />
-                    ) : (
-                        <CardModal
-                            key="create-modal"
-                            isOpen={showModal}
-                            onClose={handleCloseModal}
-                            onSaved={getCards}
-                        />
-                    )
+                <CardModal
+                    isOpen={showCreateModal}
+                    onClose={handleCloseModals}
+                    onSaved={getCards}
+                />
+                {selectedCard && (
+                    <CardModalEdit
+                        isOpen={showEditModal}
+                        onClose={handleCloseModals}
+                        card={selectedCard}
+                    />
                 )}
             </div>
         </div>
