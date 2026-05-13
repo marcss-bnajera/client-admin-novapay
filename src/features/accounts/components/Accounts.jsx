@@ -24,8 +24,9 @@ export const Accounts = () => {
         try {
             await deleteAccount(numeroCuenta);
             showSuccess("Cuenta cerrada correctamente");
-        } catch {
-            showError("Error al cerrar la cuenta");
+        } catch (error) {
+            const message = error.response?.data?.message || "Error al cerrar la cuenta";
+            showError(message);
         }
     };
 

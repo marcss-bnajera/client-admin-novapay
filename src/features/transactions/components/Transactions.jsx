@@ -100,7 +100,7 @@ export const Transactions = () => {
                                     <tr key={tx.id || tx._id} className="group hover:bg-slate-700/20 transition-all">
                                         <td className="px-6 py-4 font-mono text-xs text-slate-500">#{tx.id || tx._id}</td>
                                         <td className="px-6 py-4">
-                                            <span className="text-white font-semibold">ACC-{tx.account_id || tx.accountId}</span>
+                                        <span className="text-white font-semibold">{tx.account?.numero_cuenta || `ACC-${tx.account_id}`}</span>
                                             <p className="text-[10px] text-slate-500 truncate w-32">{tx.description || tx.descripcion}</p>
                                         </td>
                                         <td className="px-6 py-4">

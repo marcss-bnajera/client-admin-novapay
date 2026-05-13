@@ -21,12 +21,13 @@ export const Users = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("¿Estás seguro de eliminar este usuario?")) return;
+        if (!window.confirm("¿Estás seguro de desactivar este usuario?")) return;
         try {
             await deleteUser(id);
-            showSuccess("Usuario eliminado correctamente");
-        } catch {
-            showError("Error al eliminar usuario");
+            showSuccess("Usuario desactivado correctamente");
+        } catch (error) {
+            const message = error.response?.data?.message || "Error al desactivar usuario";
+            showError(message);
         }
     };
 
