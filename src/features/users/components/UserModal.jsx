@@ -6,7 +6,10 @@ import { getRoles } from "../../../shared/api/admin";
 import { X, User, Mail, IdCard, Phone, Briefcase, MapPin, Lock, RefreshCw } from "lucide-react";
 
 export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    // 1. Agregamos setValue y trigger para forzar la validación visual e interna
+    const { register, handleSubmit, reset, setValue, trigger, formState: { errors } } = useForm({
+        mode: "onChange"
+    });
     const { createUser, updateUser, loading } = useUsersStore();
     const [roles, setRoles] = useState([]);
 
@@ -18,6 +21,14 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
             })
             .catch(() => setRoles([]));
     }, []);
+
+    const allowOnlyLetters = value => {
+        return value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, "");
+    };
+
+    const allowOnlyNumbers = value => {
+        return value.replace(/[^0-9]/g, "");
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -99,20 +110,37 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                     <div className="p-6 space-y-4 overflow-y-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+                            {/* NOMBRE */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><User className="w-3.5 h-3.5" /> Nombre</label>
-                                <input type="text" className={inputClass} placeholder="Ej. Juan"
-                                    {...register("nombre", { required: "El nombre es obligatorio" })} />
+                                <input type="text" className={inputClass} placeholder="Ej. Juan" maxLength={50}
+                                    {...register("nombre", {
+                                        required: "El nombre es obligatorio",
+                                        onChange: (e) => {
+                                            const clean = allowOnlyLetters(e.target.value);
+                                            setValue("nombre", clean);
+                                            trigger("nombre");
+                                        }
+                                    })} />
                                 {errors.nombre && <p className="text-red-400 text-xs mt-1">{errors.nombre.message}</p>}
                             </div>
 
+                            {/* APELLIDO */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><User className="w-3.5 h-3.5" /> Apellido</label>
-                                <input type="text" className={inputClass} placeholder="Ej. Pérez"
-                                    {...register("apellido", { required: "El apellido es obligatorio" })} />
+                                <input type="text" className={inputClass} placeholder="Ej. Pérez" maxLength={50}
+                                    {...register("apellido", {
+                                        required: "El apellido es obligatorio",
+                                        onChange: (e) => {
+                                            const clean = allowOnlyLetters(e.target.value);
+                                            setValue("apellido", clean);
+                                            trigger("apellido");
+                                        }
+                                    })} />
                                 {errors.apellido && <p className="text-red-400 text-xs mt-1">{errors.apellido.message}</p>}
                             </div>
 
+                            {/* USERNAME */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><User className="w-3.5 h-3.5" /> Nombre de Usuario</label>
                                 <input type="text" className={inputClass} placeholder="jperez"
@@ -120,6 +148,7 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                                 {errors.username && <p className="text-red-400 text-xs mt-1">{errors.username.message}</p>}
                             </div>
 
+                            {/* EMAIL */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><Mail className="w-3.5 h-3.5" /> Email</label>
                                 <input type="email" className={inputClass} placeholder="juan@ejemplo.com"
@@ -127,13 +156,23 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                                 {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
                             </div>
 
+                            {/* DPI */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><IdCard className="w-3.5 h-3.5" /> DPI (13 dígitos)</label>
                                 <input type="text" className={inputClass} placeholder="0000000000000" maxLength={13}
-                                    {...register("dpi", { required: "El DPI es obligatorio", minLength: { value: 13, message: "El DPI debe tener 13 dígitos" }, maxLength: { value: 13, message: "El DPI debe tener 13 dígitos" } })} />
+                                    {...register("dpi", {
+                                        required: "El DPI es obligatorio",
+                                        minLength: { value: 13, message: "El DPI debe tener 13 dígitos" },
+                                        onChange: (e) => {
+                                            const clean = allowOnlyNumbers(e.target.value);
+                                            setValue("dpi", clean);
+                                            trigger("dpi");
+                                        }
+                                    })} />
                                 {errors.dpi && <p className="text-red-400 text-xs mt-1">{errors.dpi.message}</p>}
                             </div>
 
+                            {/* NIT */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><IdCard className="w-3.5 h-3.5" /> NIT</label>
                                 <input type="text" className={inputClass} placeholder="1234567-K"
@@ -141,19 +180,30 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                                 {errors.nit && <p className="text-red-400 text-xs mt-1">{errors.nit.message}</p>}
                             </div>
 
+                            {/* TELÉFONO */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><Phone className="w-3.5 h-3.5" /> Teléfono</label>
-                                <input type="text" className={inputClass} placeholder="50000000"
-                                    {...register("telefono", { required: "El teléfono es obligatorio" })} />
+                                <input type="text" className={inputClass} placeholder="50000000" maxLength={8}
+                                    {...register("telefono", {
+                                        required: "El teléfono es obligatorio",
+                                        minLength: { value: 8, message: "El teléfono debe tener 8 dígitos" },
+                                        onChange: (e) => {
+                                            const clean = allowOnlyNumbers(e.target.value);
+                                            setValue("telefono", clean);
+                                            trigger("telefono");
+                                        }
+                                    })} />
                                 {errors.telefono && <p className="text-red-400 text-xs mt-1">{errors.telefono.message}</p>}
                             </div>
 
+                            {/* TRABAJO */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><Briefcase className="w-3.5 h-3.5" /> Empresa / Trabajo</label>
                                 <input type="text" className={inputClass} placeholder="Nombre de la empresa"
                                     {...register("nombre_trabajo")} />
                             </div>
 
+                            {/* INGRESOS */}
                             <div className="flex flex-col">
                                 <label className={labelClass}>Ingresos Mensuales (Q)</label>
                                 <input type="number" step="0.01" className={inputClass} placeholder="0.00"
@@ -161,6 +211,7 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                                 {errors.ingresos_mensuales && <p className="text-red-400 text-xs mt-1">{errors.ingresos_mensuales.message}</p>}
                             </div>
 
+                            {/* ROL */}
                             <div className="flex flex-col">
                                 <label className={labelClass}>Rol</label>
                                 <select className={inputClass} {...register("role_id", { required: "Selecciona un rol" })}>
@@ -179,6 +230,7 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                                 {errors.role_id && <p className="text-red-400 text-xs mt-1">{errors.role_id.message}</p>}
                             </div>
 
+                            {/* DIRECCIÓN */}
                             <div className="flex flex-col md:col-span-2">
                                 <label className={labelClass}><MapPin className="w-3.5 h-3.5" /> Dirección</label>
                                 <textarea className={`${inputClass} h-20 resize-none`} placeholder="Dirección de residencia"
@@ -186,6 +238,7 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                                 {errors.direccion && <p className="text-red-400 text-xs mt-1">{errors.direccion.message}</p>}
                             </div>
 
+                            {/* CONTRASEÑA */}
                             {!user && (
                                 <div className="flex flex-col md:col-span-2 pt-4 border-t border-slate-700/50">
                                     <label className={labelClass}><Lock className="w-3.5 h-3.5" /> Contraseña Temporal</label>

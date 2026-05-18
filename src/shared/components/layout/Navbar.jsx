@@ -1,17 +1,9 @@
 import imgLogo from "../../../assets/img/logo_novapay_signo.png";
-import { LogOut } from "lucide-react";
 import { AvatarUser } from "../../ui/AvatarUser";
 import { useAuthStore } from "../../../features/auth/store/authStore";
-import { useNavigate } from "react-router-dom";
 
 export const Navbar = () => {
-    const { user, logout } = useAuthStore();
-    const navigate = useNavigate();
-
-    const handleLogout = () => {
-        logout();
-        navigate("/");
-    };
+    const { user } = useAuthStore();
 
     return (
         <nav className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] sticky top-0 z-50 border-b border-emerald-500/20 shadow-xl">
@@ -48,13 +40,6 @@ export const Navbar = () => {
                         </div>
                         <AvatarUser />
                     </div>
-
-                    {/* LOGOUT */}
-                    <button onClick={handleLogout}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-sm font-medium">
-                        <LogOut className="w-4 h-4" />
-                        <span className="hidden md:inline">Salir</span>
-                    </button>
                 </div>
             </div>
         </nav>
