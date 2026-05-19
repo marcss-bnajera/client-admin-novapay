@@ -1,12 +1,39 @@
-import { Users, ShieldCheck, Activity, BarChart3, ArrowUpRight, ArrowDownLeft, AlertTriangle, Globe, Briefcase, TrendingUp } from "lucide-react";
+import { useEffect } from "react";
+import { useDashboardStore } from "../store/homeStore";
+import {
+    BarChart3, ArrowUpRight, ArrowDownLeft, AlertTriangle, Globe, TrendingUp
+} from "lucide-react";
 
 export const Home = () => {
-    const stats = [
-        { label: "Usuarios Totales", value: "12,840", grow: "+12%", icon: Users, color: "text-blue-400" },
-        { label: "Liquidez Global", value: "Q4.2M", grow: "+5.4%", icon: Briefcase, color: "text-emerald-400" },
-        { label: "Transacciones Hoy", value: "1,250", grow: "+18%", icon: Activity, color: "text-amber-400" },
-        { label: "Alertas de Riesgo", value: "3", grow: "Estable", icon: ShieldCheck, color: "text-rose-400" },
-    ];
+    const {
+        stats, chartData, currencyData, alerts, loading, error, fetchDashboardData
+    } = useDashboardStore();
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, [fetchDashboardData]);
+
+    if (loading) {
+        return (
+            <div className="p-8 min-h-screen bg-slate-950 text-white flex items-center justify-center">
+                <div className="animate-pulse text-emerald-400 font-bold tracking-widest text-lg">
+                    CARGANDO DATOS DE NOVAPAY...
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-8 min-h-screen bg-slate-950 text-white flex items-center justify-center">
+                <div className="text-rose-400 bg-rose-500/10 border border-rose-500/20 p-6 rounded-2xl text-center max-w-md">
+                    <AlertTriangle className="w-12 h-12 mx-auto mb-3" />
+                    <p className="font-bold">Error de Conexión</p>
+                    <p className="text-sm text-slate-400 mt-1">{error}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
@@ -19,6 +46,7 @@ export const Home = () => {
                     </div>
                 </div>
 
+                {/* Tarjetas de Estadísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {stats.map((stat, i) => (
                         <div key={i} className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 p-6 rounded-3xl hover:border-emerald-500/30 transition-all group">
@@ -38,6 +66,7 @@ export const Home = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Gráfico Dinámico */}
                     <div className="lg:col-span-2 bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8">
                         <div className="flex justify-between items-center mb-8">
                             <div className="flex items-center gap-3">
@@ -55,7 +84,7 @@ export const Home = () => {
                         </div>
 
                         <div className="h-48 flex items-end justify-between gap-2 px-4">
-                            {[40, 70, 45, 90, 65, 80, 95, 60, 50, 85].map((h, i) => (
+                            {chartData.map((h, i) => (
                                 <div key={i} className="flex-1 bg-gradient-to-t from-emerald-600 to-teal-400 rounded-t-lg transition-all hover:scale-110 cursor-pointer" style={{ height: `${h}%` }}></div>
                             ))}
                         </div>
@@ -64,29 +93,31 @@ export const Home = () => {
                         </div>
                     </div>
 
+                    {/* Volumen por Divisa Dinámico */}
                     <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 flex flex-col justify-between">
                         <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
                             <Globe className="text-emerald-500 w-6 h-6" /> Volumen por Divisa
                         </h3>
                         <div className="space-y-6">
-                            {[
-                                { coin: "USD", vol: "Q1.2M", perc: "65%", icon: ArrowUpRight, color: "text-emerald-400" },
-                                { coin: "EUR", vol: "Q450k", perc: "25%", icon: ArrowUpRight, color: "text-emerald-400" },
-                                { coin: "GTQ", vol: "Q180k", perc: "10%", icon: ArrowDownLeft, color: "text-rose-400" },
-                            ].map((d, i) => (
-                                <div key={i} className="space-y-2">
-                                    <div className="flex justify-between text-xs font-bold">
-                                        <span className="text-slate-300 flex items-center gap-2">
-                                            <d.icon className={`w-3 h-3 ${d.color}`} />
-                                            {d.coin}
-                                        </span>
-                                        <span className="text-white">{d.vol}</span>
+                            {currencyData.map((d, i) => {
+                                const CoinIcon = d.trend === "up" ? ArrowUpRight : ArrowDownLeft;
+                                const iconColor = d.trend === "up" ? "text-emerald-400" : "text-rose-400";
+
+                                return (
+                                    <div key={i} className="space-y-2">
+                                        <div className="flex justify-between text-xs font-bold">
+                                            <span className="text-slate-300 flex items-center gap-2">
+                                                <CoinIcon className={`w-3 h-3 ${iconColor}`} />
+                                                {d.coin}
+                                            </span>
+                                            <span className="text-white">{d.vol}</span>
+                                        </div>
+                                        <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                            <div className="bg-emerald-500 h-full rounded-full" style={{ width: d.perc }}></div>
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                        <div className="bg-emerald-500 h-full rounded-full" style={{ width: d.perc }}></div>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         <div className="mt-8 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex items-center gap-3">
                             <TrendingUp className="w-5 h-5 text-emerald-400" />
@@ -97,6 +128,7 @@ export const Home = () => {
                     </div>
                 </div>
 
+                {/* Tabla de Alertas Dinámica */}
                 <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8">
                     <div className="flex items-center gap-3 mb-6">
                         <AlertTriangle className="text-rose-500 w-6 h-6" />
@@ -112,16 +144,31 @@ export const Home = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-700/50 text-sm">
-                                <tr className="hover:bg-rose-500/5 transition-colors">
-                                    <td className="px-6 py-4 flex items-center gap-3 font-medium">
-                                        <ArrowUpRight className="w-4 h-4 text-rose-500" />
-                                        Intento de retiro inusual
-                                    </td>
-                                    <td className="px-6 py-4 font-mono text-slate-400 text-xs">USR_8829</td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button className="text-emerald-400 font-bold hover:underline">Revisar</button>
-                                    </td>
-                                </tr>
+                                {alerts.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="3" className="px-6 py-8 text-center text-slate-500 font-semibold">
+                                            No hay alertas de seguridad pendientes.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    alerts.map((item) => (
+                                        <tr key={item.id} className="hover:bg-rose-500/5 transition-colors">
+                                            <td className="px-6 py-4 flex items-center gap-3 font-medium">
+                                                <ArrowUpRight className="w-4 h-4 text-rose-500" />
+                                                {item.event}
+                                            </td>
+                                            <td className="px-6 py-4 font-mono text-slate-400 text-xs">{item.userId}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => window.alert(`Revisando usuario: ${item.userId}`)}
+                                                    className="text-emerald-400 font-bold hover:underline"
+                                                >
+                                                    Revisar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>

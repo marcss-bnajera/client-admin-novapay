@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useDashboardStore } from "../../home/store/homeStore";
 import { useCurrenciesStore } from "../store/currenciesStore";
 import { showSuccess, showError } from "../../../shared/utils/toast";
 import { X, Coins, Type, Hash, TrendingUp, Save, RefreshCw } from "lucide-react";
@@ -33,7 +34,11 @@ export const CurrencyModal = ({ isOpen, onClose, currency, onSaved }) => {
                 await createCurrency(data);
                 showSuccess("Divisa creada correctamente");
             }
+
             onSaved?.();
+
+            useDashboardStore.getState().fetchDashboardData();
+
             reset();
             onClose();
         } catch {

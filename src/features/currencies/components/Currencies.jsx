@@ -85,8 +85,11 @@ export const Currencies = () => {
                     <div className="text-center py-20 text-slate-500 italic">No se encontraron divisas.</div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredCurrencies.map((c) => (
-                            <div key={c.id || c._id} className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 hover:border-emerald-500/30 transition-all group">
+                        {filteredCurrencies.map((c, index) => (
+                            <div
+                                key={c.id || c._id || `${c.currency}-${index}`}
+                                className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 hover:border-emerald-500/30 transition-all group"
+                            >
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 text-2xl font-bold border border-emerald-500/20">
                                         {c.symbol || c.simbolo}
