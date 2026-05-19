@@ -6,7 +6,6 @@ import { getRoles } from "../../../shared/api/admin";
 import { X, User, Mail, IdCard, Phone, Briefcase, MapPin, Lock, RefreshCw } from "lucide-react";
 
 export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
-    // 1. Agregamos setValue y trigger para forzar la validación visual e interna
     const { register, handleSubmit, reset, setValue, trigger, formState: { errors } } = useForm({
         mode: "onChange"
     });
@@ -175,7 +174,7 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                             {/* NIT */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><IdCard className="w-3.5 h-3.5" /> NIT</label>
-                                <input type="text" className={inputClass} placeholder="1234567-K"
+                                <input type="text" className={inputClass} placeholder="1234567-K" maxLength={9}
                                     {...register("nit", { required: "El NIT es obligatorio" })} />
                                 {errors.nit && <p className="text-red-400 text-xs mt-1">{errors.nit.message}</p>}
                             </div>

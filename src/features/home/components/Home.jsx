@@ -1,15 +1,4 @@
-import { 
-    Users, 
-    ShieldCheck, 
-    Activity, 
-    BarChart3, 
-    ArrowUpRight, 
-    ArrowDownLeft, 
-    AlertTriangle,
-    Globe,
-    Briefcase,
-    TrendingUp
-} from "lucide-react";
+import { Users, ShieldCheck, Activity, BarChart3, ArrowUpRight, ArrowDownLeft, AlertTriangle, Globe, Briefcase, TrendingUp } from "lucide-react";
 
 export const Home = () => {
     const stats = [
@@ -22,7 +11,7 @@ export const Home = () => {
     return (
         <div className="p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
             <div className="max-w-7xl mx-auto space-y-8">
-                
+
                 <div className="flex justify-between items-end">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Panel de Control <span className="text-emerald-400">NovaPay</span></h1>
@@ -64,7 +53,7 @@ export const Home = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="h-48 flex items-end justify-between gap-2 px-4">
                             {[40, 70, 45, 90, 65, 80, 95, 60, 50, 85].map((h, i) => (
                                 <div key={i} className="flex-1 bg-gradient-to-t from-emerald-600 to-teal-400 rounded-t-lg transition-all hover:scale-110 cursor-pointer" style={{ height: `${h}%` }}></div>
