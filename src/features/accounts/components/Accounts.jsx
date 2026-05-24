@@ -94,8 +94,8 @@ export const Accounts = () => {
                                         </td>
                                     </tr>
                                 ) : (
-                                    accounts.map((account) => (
-                                        <tr key={account.numero_cuenta} className="group hover:bg-slate-700/20 transition-colors">
+                                    accounts.map((account, index) => (
+                                        <tr key={`${account.numero_cuenta || 'no-acc'}-${index}`} className="group hover:bg-slate-700/20 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center text-emerald-400 border border-slate-600">
@@ -111,11 +111,10 @@ export const Accounts = () => {
                                                 <span className="text-slate-300 text-sm font-medium">{account.nombre_cuenta || `Usuario #${account.usuario_id}`}</span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 text-[10px] rounded-lg font-bold border ${
-                                                    account.tipo_cuenta === "Monetaria" || account.tipo_cuenta === "MONETARIA"
+                                                <span className={`px-2.5 py-1 text-[10px] rounded-lg font-bold border ${account.tipo_cuenta === "Monetaria" || account.tipo_cuenta === "MONETARIA"
                                                         ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
                                                         : "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                                                }`}>
+                                                    }`}>
                                                     {account.tipo_cuenta || "—"}
                                                 </span>
                                             </td>
