@@ -3,6 +3,7 @@ import {
     getPassbooks as getPassbooksRequest,
     createPassbook as createPassbookRequest,
     deletePassbook as deletePassbookRequest,
+    updatePassbook as updatePassbookRequest,
 } from "../../../shared/api";
 
 export const usePassbooksStore = create((set, get) => ({
@@ -26,9 +27,7 @@ export const usePassbooksStore = create((set, get) => ({
         try {
             set({ loading: true, error: null });
             const response = await createPassbookRequest(data);
-
             const newPassbook = response.data?.passbook;
-
             if (newPassbook) {
                 set((state) => ({
                     passbooks: [newPassbook, ...state.passbooks],
@@ -37,6 +36,23 @@ export const usePassbooksStore = create((set, get) => ({
             }
         } catch (error) {
             set({ loading: false, error: error.response?.data?.message || "Error al crear" });
+            throw error;
+        }
+    },
+
+    updatePassbook: async (id, estado) => {
+        try {
+            set({ loading: true });
+            const response = await updatePassbookRequest(id, { estado });
+            const updated = response.data?.passbook;
+            set((state) => ({
+                passbooks: state.passbooks.map((p) =>
+                    p.id === id ? { ...p, estado: updated.estado } : p
+                ),
+                loading: false
+            }));
+        } catch (error) {
+            set({ loading: false });
             throw error;
         }
     },

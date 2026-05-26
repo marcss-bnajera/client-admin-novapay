@@ -82,6 +82,10 @@ export const deletePassbook = async (id) => {
     return await axiosAdmin.delete(`/passbooks/${id}`);
 };
 
+export const updatePassbook = async (id, data) => {
+    return await axiosAdmin.put(`/passbooks/${id}`, data);
+};
+
 // ==================== PRODUCTS ====================
 export const getProducts = async () => {
     return await axiosAdmin.get("/products");
