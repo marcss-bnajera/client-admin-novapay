@@ -1,7 +1,14 @@
 import { useForm } from "react-hook-form";
 import { useCardsStore } from "../store/cardsStore";
 import { showSuccess, showError } from "../../../shared/utils/toast";
-import { X, CheckCircle, Ban, AlertCircle } from "lucide-react";
+import { X, CheckCircle, Ban, AlertCircle, CreditCard, Star, Wallet, Globe } from "lucide-react";
+
+const TIPO_CONFIG = {
+    DEBITO:  { label: "Débito",  icon: <CreditCard className="w-4 h-4" />, cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+    CREDITO: { label: "Crédito", icon: <Star      className="w-4 h-4" />, cls: "text-violet-400  bg-violet-500/10  border-violet-500/20"  },
+    PREPAGO: { label: "Prepago", icon: <Wallet    className="w-4 h-4" />, cls: "text-amber-400   bg-amber-500/10   border-amber-500/20"   },
+    VIRTUAL: { label: "Virtual", icon: <Globe     className="w-4 h-4" />, cls: "text-sky-400     bg-sky-500/10     border-sky-500/20"     },
+};
 
 export const CardModalEdit = ({ isOpen, onClose, card }) => {
     const { register, handleSubmit } = useForm({
@@ -23,33 +30,45 @@ export const CardModalEdit = ({ isOpen, onClose, card }) => {
 
     const getStatusConfig = (status) => {
         switch (status) {
-            case 'ACTIVA':
-                return { icon: <CheckCircle className="w-5 h-5 text-emerald-400" />, color: 'hover:border-emerald-500/50' };
-            case 'INACTIVA':
-                return { icon: <Ban className="w-5 h-5 text-slate-400" />, color: 'hover:border-slate-500/50' };
-            case 'BLOQUEADA':
-                return { icon: <AlertCircle className="w-5 h-5 text-red-400" />, color: 'hover:border-red-500/50' };
-            default:
-                return { icon: null, color: 'hover:border-slate-500/50' };
+            case 'ACTIVA':    return { icon: <CheckCircle className="w-5 h-5 text-emerald-400" />, color: 'hover:border-emerald-500/50' };
+            case 'INACTIVA':  return { icon: <Ban         className="w-5 h-5 text-slate-400"   />, color: 'hover:border-slate-500/50'   };
+            case 'BLOQUEADA': return { icon: <AlertCircle className="w-5 h-5 text-red-400"     />, color: 'hover:border-red-500/50'     };
+            default:          return { icon: null,                                                  color: 'hover:border-slate-500/50'   };
         }
     };
+
+    const tipo = TIPO_CONFIG[card.tipo_tarjeta] || TIPO_CONFIG.DEBITO;
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-[60] px-3">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+
+                {/* HEADER */}
                 <div className="p-6 border-b border-slate-800 flex justify-between items-center">
-                    <div>
+                    <div className="space-y-2">
                         <h2 className="text-xl font-bold text-white">Gestionar Tarjeta</h2>
-                        <p className="text-xs text-slate-500 font-mono">ID: {card.id}</p>
+                        <div className="flex items-center gap-2">
+                            {/* Tipo badge */}
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-bold border ${tipo.cls}`}>
+                                {tipo.icon} {tipo.label}
+                            </span>
+                            {/* Últimos 4 dígitos */}
+                            <span className="text-xs text-slate-500 font-mono">
+                                **** {(card.numero_tarjeta || "0000").slice(-4)}
+                            </span>
+                        </div>
                     </div>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
+                {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
                     <div>
-                        <label className="text-xs text-slate-400 block mb-4 uppercase tracking-widest font-bold">Seleccionar Nuevo Estado</label>
+                        <label className="text-xs text-slate-400 block mb-4 uppercase tracking-widest font-bold">
+                            Seleccionar Nuevo Estado
+                        </label>
                         <div className="grid grid-cols-1 gap-3">
                             {['ACTIVA', 'INACTIVA', 'BLOQUEADA'].map((status) => {
                                 const { icon, color } = getStatusConfig(status);

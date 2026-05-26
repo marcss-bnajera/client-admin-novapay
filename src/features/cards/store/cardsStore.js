@@ -27,14 +27,12 @@ export const useCardsStore = create((set, get) => ({
         try {
             set({ loading: true, error: null });
 
-            // El controlador espera 'numero_cuenta', nada más.
             const payload = {
-                numero_cuenta: String(data.numero_cuenta).trim()
+                numero_cuenta: String(data.numero_cuenta).trim(),
+                tipo_tarjeta: data.tipo_tarjeta || 'DEBITO',
             };
 
             const response = await createCardRequest(payload);
-
-            // El backend responde con { success: true, card: {...} }
             const newCard = response.data.card;
 
             set((state) => ({
@@ -66,7 +64,6 @@ export const useCardsStore = create((set, get) => ({
         try {
             set({ loading: true });
             const response = await updateCardRequest(id, { estado });
-
             const updatedCard = response.data.card;
 
             set((state) => ({

@@ -3,7 +3,23 @@ import { CardModal } from "./CardModal";
 import { CardModalEdit } from "./CardModalEdit";
 import { useCardsStore } from "../store/cardsStore";
 import { showSuccess, showError } from "../../../shared/utils/toast";
-import { Search, PlusCircle, CreditCard, Calendar, Trash2, Pencil, RefreshCw } from "lucide-react";
+import { Search, PlusCircle, CreditCard, Calendar, Trash2, Pencil, RefreshCw, Wallet, Globe, Star } from "lucide-react";
+
+// Badge visual por tipo de tarjeta
+const TipoBadge = ({ tipo }) => {
+    const config = {
+        DEBITO:  { label: "Débito",  icon: <CreditCard className="w-3 h-3" />, cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+        CREDITO: { label: "Crédito", icon: <Star      className="w-3 h-3" />, cls: "bg-violet-500/10  text-violet-400  border-violet-500/20"  },
+        PREPAGO: { label: "Prepago", icon: <Wallet    className="w-3 h-3" />, cls: "bg-amber-500/10   text-amber-400   border-amber-500/20"   },
+        VIRTUAL: { label: "Virtual", icon: <Globe     className="w-3 h-3" />, cls: "bg-sky-500/10     text-sky-400     border-sky-500/20"     },
+    };
+    const { label, icon, cls } = config[tipo] || config.DEBITO;
+    return (
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] rounded-full font-bold border ${cls}`}>
+            {icon} {label}
+        </span>
+    );
+};
 
 export const Cards = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -47,7 +63,8 @@ export const Cards = () => {
         const term = searchTerm.toLowerCase();
         const num = c.numero_tarjeta || "";
         const cuenta = c.account?.numero_cuenta || String(c.account_id || "");
-        return num.includes(term) || cuenta.includes(term);
+        const tipo = (c.tipo_tarjeta || "").toLowerCase();
+        return num.includes(term) || cuenta.includes(term) || tipo.includes(term);
     });
 
     return (
@@ -66,10 +83,10 @@ export const Cards = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Buscar tarjeta..."
+                                placeholder="Buscar por número, cuenta o tipo..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all w-full sm:w-64"
+                                className="pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all w-full sm:w-72"
                             />
                         </div>
                         <button
@@ -91,6 +108,7 @@ export const Cards = () => {
                             <thead>
                                 <tr className="bg-slate-700/30 text-slate-400 text-xs uppercase tracking-wider">
                                     <th className="px-6 py-4 font-semibold">Tarjeta</th>
+                                    <th className="px-6 py-4 font-semibold">Tipo</th>
                                     <th className="px-6 py-4 font-semibold text-center">CVV</th>
                                     <th className="px-6 py-4 font-semibold">Expiración</th>
                                     <th className="px-6 py-4 font-semibold">No. Cuenta</th>
@@ -100,13 +118,15 @@ export const Cards = () => {
                             </thead>
                             <tbody className="divide-y divide-slate-700/50">
                                 {loading && filteredCards.length === 0 ? (
-                                    <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                                    <tr><td colSpan="7" className="px-6 py-12 text-center text-slate-500">
                                         <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-500" /> Cargando tarjetas...
                                     </td></tr>
                                 ) : filteredCards.length === 0 ? (
-                                    <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron tarjetas.</td></tr>
+                                    <tr><td colSpan="7" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron tarjetas.</td></tr>
                                 ) : filteredCards.map((card) => (
                                     <tr key={card.id || card._id} className="group hover:bg-slate-700/20 transition-colors">
+
+                                        {/* NÚMERO */}
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-7 rounded bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center border border-slate-500/30">
@@ -117,28 +137,44 @@ export const Cards = () => {
                                                 </span>
                                             </div>
                                         </td>
+
+                                        {/* TIPO */}
+                                        <td className="px-6 py-4">
+                                            <TipoBadge tipo={card.tipo_tarjeta || "DEBITO"} />
+                                        </td>
+
+                                        {/* CVV */}
                                         <td className="px-6 py-4 text-center">
                                             <span className="text-slate-400 font-mono text-sm">***</span>
                                         </td>
+
+                                        {/* EXPIRACIÓN */}
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2 text-slate-300">
                                                 <Calendar className="w-4 h-4 text-slate-500" />
                                                 <span className="text-sm font-mono">{card.fecha_expiracion || "—"}</span>
                                             </div>
                                         </td>
+
+                                        {/* CUENTA */}
                                         <td className="px-6 py-4">
                                             <span className="text-sm text-slate-400 font-mono">{card.account?.numero_cuenta || card.account_id}</span>
                                         </td>
+
+                                        {/* ESTADO */}
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`px-2.5 py-1 text-[10px] rounded-full font-bold border ${card.estado === "ACTIVA"
-                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                                : card.estado === "BLOQUEADA"
-                                                    ? "bg-red-500/10 text-red-400 border-red-500/20"
-                                                    : "bg-slate-500/10 text-slate-400 border-slate-500/20"
-                                                }`}>
+                                            <span className={`px-2.5 py-1 text-[10px] rounded-full font-bold border ${
+                                                card.estado === "ACTIVA"
+                                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                                    : card.estado === "BLOQUEADA"
+                                                        ? "bg-red-500/10 text-red-400 border-red-500/20"
+                                                        : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                            }`}>
                                                 {card.estado || "ACTIVA"}
                                             </span>
                                         </td>
+
+                                        {/* ACCIONES */}
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
                                                 <button
@@ -148,7 +184,6 @@ export const Cards = () => {
                                                 >
                                                     <Pencil className="w-4 h-4" />
                                                 </button>
-
                                                 <button
                                                     onClick={() => handleDelete(card.id || card._id)}
                                                     className="p-2 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all"
@@ -164,6 +199,7 @@ export const Cards = () => {
                         </table>
                     </div>
                 </div>
+
                 <CardModal
                     isOpen={showCreateModal}
                     onClose={handleCloseModals}

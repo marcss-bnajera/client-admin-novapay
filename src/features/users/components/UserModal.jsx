@@ -21,12 +21,16 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
             .catch(() => setRoles([]));
     }, []);
 
-    const allowOnlyLetters = value => {
-        return value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, "");
-    };
+    // Filtra solo letras (con tildes y ñ)
+    const allowOnlyLetters = value => value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, "");
 
-    const allowOnlyNumbers = value => {
-        return value.replace(/[^0-9]/g, "");
+    // Filtra solo números
+    const allowOnlyNumbers = value => value.replace(/[^0-9]/g, "");
+
+    // Helper: actualiza campo y valida en tiempo real
+    const handleFilteredChange = (field, filterFn) => (e) => {
+        const clean = filterFn(e.target.value);
+        setValue(field, clean, { shouldValidate: true });
     };
 
     useEffect(() => {
@@ -60,7 +64,11 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
 
     const onSubmit = async (data) => {
         try {
-            const payload = { ...data, ingresos_mensuales: parseFloat(data.ingresos_mensuales), role_id: parseInt(data.role_id) };
+            const payload = {
+                ...data,
+                ingresos_mensuales: parseFloat(data.ingresos_mensuales),
+                role_id: parseInt(data.role_id)
+            };
 
             if (user) {
                 await updateUser(user.id || user._id, payload);
@@ -112,108 +120,173 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                             {/* NOMBRE */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><User className="w-3.5 h-3.5" /> Nombre</label>
-                                <input type="text" className={inputClass} placeholder="Ej. Juan" maxLength={50}
+                                <input
+                                    type="text"
+                                    className={inputClass}
+                                    placeholder="Ej. Juan"
+                                    maxLength={50}
                                     {...register("nombre", {
                                         required: "El nombre es obligatorio",
-                                        onChange: (e) => {
-                                            const clean = allowOnlyLetters(e.target.value);
-                                            setValue("nombre", clean);
-                                            trigger("nombre");
-                                        }
-                                    })} />
+                                        pattern: {
+                                            value: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$/,
+                                            message: "El nombre solo debe contener letras"
+                                        },
+                                        onChange: handleFilteredChange("nombre", allowOnlyLetters)
+                                    })}
+                                />
                                 {errors.nombre && <p className="text-red-400 text-xs mt-1">{errors.nombre.message}</p>}
                             </div>
 
                             {/* APELLIDO */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><User className="w-3.5 h-3.5" /> Apellido</label>
-                                <input type="text" className={inputClass} placeholder="Ej. Pérez" maxLength={50}
+                                <input
+                                    type="text"
+                                    className={inputClass}
+                                    placeholder="Ej. Pérez"
+                                    maxLength={50}
                                     {...register("apellido", {
                                         required: "El apellido es obligatorio",
-                                        onChange: (e) => {
-                                            const clean = allowOnlyLetters(e.target.value);
-                                            setValue("apellido", clean);
-                                            trigger("apellido");
-                                        }
-                                    })} />
+                                        pattern: {
+                                            value: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$/,
+                                            message: "El apellido solo debe contener letras"
+                                        },
+                                        onChange: handleFilteredChange("apellido", allowOnlyLetters)
+                                    })}
+                                />
                                 {errors.apellido && <p className="text-red-400 text-xs mt-1">{errors.apellido.message}</p>}
                             </div>
 
                             {/* USERNAME */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><User className="w-3.5 h-3.5" /> Nombre de Usuario</label>
-                                <input type="text" className={inputClass} placeholder="jperez"
-                                    {...register("username", { required: "El username es obligatorio", minLength: { value: 3, message: "Mínimo 3 caracteres" } })} />
+                                <input
+                                    type="text"
+                                    className={inputClass}
+                                    placeholder="Ej. jperez123"
+                                    {...register("username", {
+                                        required: "El username es obligatorio",
+                                        minLength: { value: 3, message: "Mínimo 3 caracteres" },
+                                        pattern: {
+                                            value: /^[a-zA-Z0-9]+$/,
+                                            message: "Solo letras y números, sin espacios"
+                                        }
+                                    })}
+                                />
                                 {errors.username && <p className="text-red-400 text-xs mt-1">{errors.username.message}</p>}
                             </div>
 
                             {/* EMAIL */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><Mail className="w-3.5 h-3.5" /> Email</label>
-                                <input type="email" className={inputClass} placeholder="juan@ejemplo.com"
-                                    {...register("email", { required: "El email es obligatorio", pattern: { value: /^\S+@\S+\.\S+$/, message: "Email inválido" } })} />
+                                <input
+                                    type="email"
+                                    className={inputClass}
+                                    placeholder="juan@ejemplo.com"
+                                    {...register("email", {
+                                        required: "El email es obligatorio",
+                                        pattern: {
+                                            value: /^\S+@\S+\.\S+$/,
+                                            message: "Formato de email inválido"
+                                        }
+                                    })}
+                                />
                                 {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
                             </div>
 
                             {/* DPI */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><IdCard className="w-3.5 h-3.5" /> DPI (13 dígitos)</label>
-                                <input type="text" className={inputClass} placeholder="0000000000000" maxLength={13}
+                                <input
+                                    type="text"
+                                    className={inputClass}
+                                    placeholder="0000000000000"
+                                    maxLength={13}
                                     {...register("dpi", {
                                         required: "El DPI es obligatorio",
-                                        minLength: { value: 13, message: "El DPI debe tener 13 dígitos" },
-                                        onChange: (e) => {
-                                            const clean = allowOnlyNumbers(e.target.value);
-                                            setValue("dpi", clean);
-                                            trigger("dpi");
-                                        }
-                                    })} />
+                                        pattern: {
+                                            value: /^[0-9]{13}$/,
+                                            message: "El DPI debe tener exactamente 13 dígitos"
+                                        },
+                                        onChange: handleFilteredChange("dpi", allowOnlyNumbers)
+                                    })}
+                                />
                                 {errors.dpi && <p className="text-red-400 text-xs mt-1">{errors.dpi.message}</p>}
                             </div>
 
                             {/* NIT */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><IdCard className="w-3.5 h-3.5" /> NIT</label>
-                                <input type="text" className={inputClass} placeholder="1234567-K" maxLength={9}
-                                    {...register("nit", { required: "El NIT es obligatorio" })} />
+                                <input
+                                    type="text"
+                                    className={inputClass}
+                                    placeholder="1234567-K"
+                                    maxLength={9}
+                                    {...register("nit", {
+                                        required: "El NIT es obligatorio",
+                                        pattern: {
+                                            value: /^[0-9Kk-]+$/,
+                                            message: "Formato de NIT inválido (ej: 1234567-K)"
+                                        }
+                                    })}
+                                />
                                 {errors.nit && <p className="text-red-400 text-xs mt-1">{errors.nit.message}</p>}
                             </div>
 
                             {/* TELÉFONO */}
                             <div className="flex flex-col">
-                                <label className={labelClass}><Phone className="w-3.5 h-3.5" /> Teléfono</label>
-                                <input type="text" className={inputClass} placeholder="50000000" maxLength={8}
+                                <label className={labelClass}><Phone className="w-3.5 h-3.5" /> Teléfono (8 dígitos)</label>
+                                <input
+                                    type="text"
+                                    className={inputClass}
+                                    placeholder="50000000"
+                                    maxLength={8}
                                     {...register("telefono", {
                                         required: "El teléfono es obligatorio",
-                                        minLength: { value: 8, message: "El teléfono debe tener 8 dígitos" },
-                                        onChange: (e) => {
-                                            const clean = allowOnlyNumbers(e.target.value);
-                                            setValue("telefono", clean);
-                                            trigger("telefono");
-                                        }
-                                    })} />
+                                        pattern: {
+                                            value: /^[0-9]{8}$/,
+                                            message: "El teléfono debe tener exactamente 8 dígitos"
+                                        },
+                                        onChange: handleFilteredChange("telefono", allowOnlyNumbers)
+                                    })}
+                                />
                                 {errors.telefono && <p className="text-red-400 text-xs mt-1">{errors.telefono.message}</p>}
                             </div>
 
                             {/* TRABAJO */}
                             <div className="flex flex-col">
                                 <label className={labelClass}><Briefcase className="w-3.5 h-3.5" /> Empresa / Trabajo</label>
-                                <input type="text" className={inputClass} placeholder="Nombre de la empresa"
-                                    {...register("nombre_trabajo")} />
+                                <input
+                                    type="text"
+                                    className={inputClass}
+                                    placeholder="Nombre de la empresa"
+                                    {...register("nombre_trabajo")}
+                                />
                             </div>
 
                             {/* INGRESOS */}
                             <div className="flex flex-col">
                                 <label className={labelClass}>Ingresos Mensuales (Q)</label>
-                                <input type="number" step="0.01" className={inputClass} placeholder="0.00"
-                                    {...register("ingresos_mensuales", { required: "Los ingresos son obligatorios", min: { value: 100, message: "Mínimo Q100.00" } })} />
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    className={inputClass}
+                                    placeholder="0.00"
+                                    {...register("ingresos_mensuales", {
+                                        required: "Los ingresos son obligatorios",
+                                        min: { value: 100, message: "El mínimo es Q100.00" }
+                                    })}
+                                />
                                 {errors.ingresos_mensuales && <p className="text-red-400 text-xs mt-1">{errors.ingresos_mensuales.message}</p>}
                             </div>
 
                             {/* ROL */}
                             <div className="flex flex-col">
                                 <label className={labelClass}>Rol</label>
-                                <select className={inputClass} {...register("role_id", { required: "Selecciona un rol" })}>
+                                <select
+                                    className={inputClass}
+                                    {...register("role_id", { required: "Selecciona un rol" })}
+                                >
                                     <option value="">Seleccione un rol</option>
                                     {roles.length > 0 ? (
                                         roles.map(r => (
@@ -232,17 +305,27 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
                             {/* DIRECCIÓN */}
                             <div className="flex flex-col md:col-span-2">
                                 <label className={labelClass}><MapPin className="w-3.5 h-3.5" /> Dirección</label>
-                                <textarea className={`${inputClass} h-20 resize-none`} placeholder="Dirección de residencia"
-                                    {...register("direccion", { required: "La dirección es obligatoria" })} />
+                                <textarea
+                                    className={`${inputClass} h-20 resize-none`}
+                                    placeholder="Dirección de residencia"
+                                    {...register("direccion", { required: "La dirección es obligatoria" })}
+                                />
                                 {errors.direccion && <p className="text-red-400 text-xs mt-1">{errors.direccion.message}</p>}
                             </div>
 
-                            {/* CONTRASEÑA */}
+                            {/* CONTRASEÑA — solo al crear */}
                             {!user && (
                                 <div className="flex flex-col md:col-span-2 pt-4 border-t border-slate-700/50">
                                     <label className={labelClass}><Lock className="w-3.5 h-3.5" /> Contraseña Temporal</label>
-                                    <input type="password" className={inputClass} placeholder="••••••••"
-                                        {...register("password", { required: "La contraseña es obligatoria", minLength: { value: 8, message: "Mínimo 8 caracteres" } })} />
+                                    <input
+                                        type="password"
+                                        className={inputClass}
+                                        placeholder="••••••••"
+                                        {...register("password", {
+                                            required: "La contraseña es obligatoria",
+                                            minLength: { value: 8, message: "Mínimo 8 caracteres" }
+                                        })}
+                                    />
                                     {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
                                 </div>
                             )}
@@ -251,13 +334,22 @@ export const UserModal = ({ isOpen, onClose, user, onSaved }) => {
 
                     {/* BOTONES */}
                     <div className="p-6 bg-slate-900/50 border-t border-slate-700/50 flex flex-col sm:flex-row justify-end gap-3">
-                        <button type="button" onClick={onClose}
-                            className="px-6 py-3 text-slate-300 font-semibold hover:bg-slate-700/50 rounded-xl transition-all">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-6 py-3 text-slate-300 font-semibold hover:bg-slate-700/50 rounded-xl transition-all"
+                        >
                             Cancelar
                         </button>
-                        <button type="submit" disabled={loading}
-                            className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
-                            {loading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Guardando...</> : user ? "Actualizar Usuario" : "Guardar Usuario"}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                        >
+                            {loading
+                                ? <><RefreshCw className="w-4 h-4 animate-spin" /> Guardando...</>
+                                : user ? "Actualizar Usuario" : "Guardar Usuario"
+                            }
                         </button>
                     </div>
                 </form>
