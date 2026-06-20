@@ -87,11 +87,16 @@ export const ProductModal = ({ isOpen, onClose, product, onSaved }) => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <label className={labelClass}><Layers className="w-3 h-3 text-emerald-500" /> Categoría</label>
-                                <input
-                                    type="text"
-                                    className={inputClass}
+                                <select
+                                    className={`${inputClass} appearance-none`}
                                     {...register("category", { required: "La categoría es obligatoria" })}
-                                />
+                                >
+                                    <option value="Seguros">Seguros</option>
+                                    <option value="Prestamos">Préstamos</option>
+                                    <option value="Inversiones">Inversiones</option>
+                                    <option value="Ahorro">Ahorro</option>
+                                    <option value="General">General</option>
+                                </select>
                                 {errors.category && <p className="text-red-400 text-xs mt-1">{errors.category.message}</p>}
                             </div>
                             <div className="space-y-1">

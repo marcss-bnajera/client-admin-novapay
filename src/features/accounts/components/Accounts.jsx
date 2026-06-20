@@ -4,6 +4,17 @@ import { useAccountsStore } from "../store/accountsStore";
 import { showSuccess, showError } from "../../../shared/utils/toast";
 import { TrendingUp, PlusCircle, Edit, XCircle, Wallet, ArrowUpRight, RefreshCw } from "lucide-react";
 
+const getEstadoColor = (estado) => {
+    const normalized = (estado || "").toUpperCase();
+    const colors = {
+        ACTIVA: { dot: "bg-emerald-500 animate-pulse", text: "text-emerald-400" },
+        INACTIVA: { dot: "bg-slate-500", text: "text-slate-400" },
+        BLOQUEADA: { dot: "bg-red-500 animate-pulse", text: "text-red-400" },
+        SUSPENDIDA: { dot: "bg-amber-500 animate-pulse", text: "text-amber-400" },
+    };
+    return colors[normalized] || colors.INACTIVA;
+};
+
 export const Accounts = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState(null);
@@ -127,12 +138,17 @@ export const Accounts = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${account.estado === "Activa" ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
-                                                    <span className={`text-xs font-semibold ${account.estado === "Activa" ? "text-emerald-400" : "text-red-400"}`}>
-                                                        {account.estado || "—"}
-                                                    </span>
-                                                </div>
+                                                {(() => {
+                                                    const estadoColors = getEstadoColor(account.estado);
+                                                    return (
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${estadoColors.dot}`} />
+                                                            <span className={`text-xs font-semibold ${estadoColors.text}`}>
+                                                                {account.estado || "—"}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">

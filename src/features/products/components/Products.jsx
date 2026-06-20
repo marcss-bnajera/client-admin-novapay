@@ -89,6 +89,7 @@ export const Products = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-700/30 text-slate-400 text-xs uppercase tracking-wider">
+                                <th className="px-6 py-4 font-semibold">ID</th>
                                 <th className="px-6 py-4 font-semibold flex items-center gap-2"><Tag className="w-4 h-4" /> Producto</th>
                                 <th className="px-6 py-4 font-semibold"><div className="flex items-center gap-2"><Layers className="w-4 h-4" /> Categoría</div></th>
                                 <th className="px-6 py-4 font-semibold text-center"><div className="flex items-center justify-center gap-2"><DollarSign className="w-4 h-4" /> Precio</div></th>
@@ -98,13 +99,16 @@ export const Products = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-700/50">
                             {loading && filteredProducts.length === 0 ? (
-                                <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                <tr key="loading"><td colSpan="6" className="px-6 py-12 text-center text-slate-500">
                                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-500" /> Cargando productos...
                                 </td></tr>
                             ) : filteredProducts.length === 0 ? (
-                                <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron productos.</td></tr>
+                                <tr key="empty"><td colSpan="6" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron productos.</td></tr>
                             ) : filteredProducts.map((prod) => (
                                 <tr key={prod.id || prod._id} className="group hover:bg-slate-700/20 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <span className="text-slate-500 font-mono text-xs">#{prod.id || prod._id}</span>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
